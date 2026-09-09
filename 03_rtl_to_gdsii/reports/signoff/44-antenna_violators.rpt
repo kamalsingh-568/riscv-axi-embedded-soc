@@ -1,0 +1,11 @@
+Partial/Required:  1.57, Required:    400.0, Partial:   626.89, Net: net837, Pin: _17382_/A0, Layer: met1
+Partial/Required:  1.53, Required:    400.0, Partial:   613.44, Net: net2668, Pin: _17388_/A0, Layer: met1
+Partial/Required:  1.43, Required:    400.0, Partial:   572.56, Net: _10585_, Pin: _24062_/A0, Layer: met1
+Partial/Required:  1.22, Required:    400.0, Partial:   488.11, Net: net4594, Pin: _17809_/A1, Layer: met1
+Partial/Required:  1.16, Required:    400.0, Partial:   465.33, Net: _14126_, Pin: _15860_/D, Layer: met1
+Partial/Required:  1.14, Required:    400.0, Partial:   456.44, Net: _04572_, Pin: _16616_/D, Layer: met1
+Partial/Required:  1.12, Required:    400.0, Partial:   448.89, Net: _09621_, Pin: _23294_/B, Layer: met1
+Partial/Required:  1.11, Required:    400.0, Partial:   443.69, Net: u_sram.w_data_r\[23\], Pin: _28654_/A, Layer: met1
+Partial/Required:  1.09, Required:    400.0, Partial:   435.16, Net: u_cpu.decoded_imm\[23\], Pin: _22663_/A, Layer: met2
+Partial/Required:  1.09, Required:    400.0, Partial:    434.2, Net: _05808_, Pin: _22070_/A2, Layer: met2
+Partial/Required:  1.01, Required:    400.0, Partial:   403.67, Net: u_sram.mem\[15\]\[5\], Pin: hold4107/A, Layer: met1
