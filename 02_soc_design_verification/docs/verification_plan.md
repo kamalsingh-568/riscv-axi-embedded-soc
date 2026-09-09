@@ -1,147 +1,158 @@
+# Verification Plan
+
+**Project:** RISC-V AXI4-Lite SoC (PicoRV32-based)
+**Stage:** 02 — SoC Design Verification
+**Tooling:** Verilator (C++ testbenches)
 
 ---
 
-# 4. `verification_plan.md`
-
-```markdown
-# Verification Plan
-
 ## 1. Objective
 
-The objective of verification is to confirm the functional correctness of the RISC-V AXI4-Lite SoC at RTL before physical implementation.
+This document defines the verification plan for the RISC-V AXI4-Lite SoC prior to physical implementation. The goal is to confirm functional correctness of the RTL at the module, interface, and system level before the design is handed off to the RTL-to-GDSII flow.
 
-The verification process focuses on processor execution, memory access, AXI4-Lite communication, address decoding, UART functionality, and system-level integration.
+Verification covers processor execution, memory access, AXI4-Lite communication, address decoding, UART functionality, and full system-level integration.
+
+---
 
 ## 2. Verification Environment
 
-The RTL verification environment consists of:
+The RTL verification environment consists of the following components:
 
-- Device Under Test (DUT)
-- PicoRV32 processor
-- ROM
-- SRAM
-- AXI4-Lite interconnect
-- AXI address decoder
-- UART peripheral
-- UART transmitter
-- UART receiver
-- Clock and reset generation
-- Firmware image
+| Component | Role |
+|---|---|
+| PicoRV32 | RISC-V processor core (Device Under Test) |
+| ROM | Firmware instruction memory |
+| SRAM | Data memory |
+| AXI4-Lite Interconnect | Bus fabric connecting master and slaves |
+| AXI Address Decoder | Selects target slave based on address |
+| UART Peripheral (AXI-wrapped) | Serial I/O interface |
+| UART Transmitter / Receiver | TX/RX logic blocks |
+| Clock & Reset Generator | Provides synchronous clock and reset sequencing |
+| Firmware Image (`rom.hex`) | Compiled test program executed by the core |
+
+Testbenches are written in Verilator (C++), with waveform dumps captured for signal-level debug.
+
+---
 
 ## 3. Verification Strategy
 
-Verification is performed at multiple levels.
+Verification is carried out in three stages, moving from isolated blocks to the fully integrated system.
 
 ### 3.1 Module-Level Verification
 
-Individual RTL blocks are checked for:
+Each RTL block is verified independently for:
 
-- Correct reset behavior
-- Expected input/output behavior
-- Sequential operation
-- Combinational logic
-- Interface connectivity
+- Correct reset behavior (synchronous/asynchronous, as designed)
+- Expected input/output response for defined stimulus
+- Correct sequential (clocked) operation
+- Correct combinational logic behavior
+- Interface connectivity to neighboring blocks
 
 ### 3.2 Interface-Level Verification
 
-AXI4-Lite communication is checked for:
+AXI4-Lite communication between the processor, interconnect, and peripherals is verified for:
 
-- Address transfer
-- Data transfer
-- VALID/READY handshaking
-- Read response
-- Write response
+- Address channel transfer (AWADDR/ARADDR)
+- Data channel transfer (WDATA/RDATA)
+- VALID/READY handshaking on all five channels
+- Correct read response (RRESP)
+- Correct write response (BRESP)
 
 ### 3.3 System-Level Verification
 
-The complete SoC is verified by executing firmware and observing processor communication with memories and peripherals.
+The complete SoC is verified by executing compiled firmware on PicoRV32 and observing correct communication with memory and peripherals through the AXI4-Lite fabric.
+
+---
 
 ## 4. Test Scenarios
 
-| Test Scenario | Verification Objective | Expected Result |
-|---|---|---|
-| Reset | Verify initialization | SoC enters a known reset state |
-| Firmware Execution | Verify processor startup | PicoRV32 executes firmware |
-| ROM Access | Verify instruction fetch | Correct firmware data is read |
-| SRAM Write | Verify write operation | Data is stored correctly |
-| SRAM Read | Verify read operation | Correct data is returned |
-| AXI-Lite Write | Verify write channel | Write transaction completes |
-| AXI-Lite Read | Verify read channel | Correct read data is returned |
-| Address Decode | Verify slave selection | Correct target is selected |
-| UART TX | Verify transmission | Expected UART output is generated |
-| UART RX | Verify reception | Received data is handled correctly |
-| SoC Integration | Verify complete system | Integrated system operates correctly |
+| # | Test Scenario | Verification Objective | Expected Result |
+|---|---|---|---|
+| 1 | Reset | Verify system initialization | SoC enters a known, deterministic reset state |
+| 2 | Firmware Execution | Verify processor startup | PicoRV32 begins fetching and executing firmware |
+| 3 | ROM Access | Verify instruction fetch | Correct instruction data is read from ROM |
+| 4 | SRAM Write | Verify data write path | Data is correctly stored in SRAM |
+| 5 | SRAM Read | Verify data read path | Correct data is returned from SRAM |
+| 6 | AXI-Lite Write | Verify write channel | Write transaction completes with correct BRESP |
+| 7 | AXI-Lite Read | Verify read channel | Correct read data returned with correct RRESP |
+| 8 | Address Decode | Verify slave selection | Address decoder selects the intended slave |
+| 9 | UART TX | Verify transmission path | Expected serial output is generated |
+| 10 | UART RX | Verify reception path | Received serial data is correctly captured |
+| 11 | SoC Integration | Verify full system operation | Processor, memory, and peripherals operate together correctly |
+
+---
 
 ## 5. Waveform Verification
 
-Waveform analysis is used to trace internal signals and verify transaction-level behavior.
+Waveform analysis is used to trace internal signals and confirm transaction-level correctness. Key signals monitored include:
 
-Important signals include:
+- Clock and reset
+- Processor bus signals (PicoRV32 memory interface)
+- AXI4-Lite address signals (AWADDR, ARADDR)
+- AXI4-Lite data signals (WDATA, RDATA)
+- VALID / READY handshake signals on all channels
+- Read response (RRESP) and write response (BRESP)
+- UART TX/RX serial signals
 
-- Clock
-- Reset
-- Processor bus signals
-- AXI-Lite address signals
-- AXI-Lite data signals
-- `VALID`
-- `READY`
-- Read response signals
-- Write response signals
-- UART signals
+Waveform captures are stored in the `waveforms/` directory of the `02_soc_design_verification` stage.
 
-Waveform captures are stored in the `waveforms/` directory.
+---
 
-## 6. Functional Verification
+## 6. Functional Verification Checklist
 
 Functional verification confirms that:
 
 1. The processor exits reset correctly.
-2. Firmware is fetched from ROM.
-3. Memory-mapped accesses are generated correctly.
-4. Address decoding selects the intended slave.
-5. AXI4-Lite transactions complete correctly.
-6. Read and write data are transferred correctly.
-7. UART accesses operate correctly.
-8. The integrated SoC performs the intended operations.
+2. Firmware is correctly fetched from ROM.
+3. Memory-mapped accesses are correctly generated by the core.
+4. Address decoding selects the intended slave for every transaction.
+5. AXI4-Lite transactions complete correctly (handshake + response).
+6. Read and write data are transferred correctly and without corruption.
+7. UART transmit and receive paths operate correctly.
+8. The fully integrated SoC performs the intended end-to-end operation.
+
+---
 
 ## 7. Verification Evidence
 
-The repository contains supporting verification artifacts including:
+The repository contains the following supporting verification artifacts under `02_soc_design_verification/`:
 
-- RTL source files
-- Testbench files
-- Simulation waveforms
-- AXI-Lite transaction visualization
+- RTL source files (`rtl/`)
+- Verilator C++ testbenches (`tb/`)
+- Simulation waveform dumps (`waveforms/`)
+- AXI-Lite transaction visualizations
 - UART verification captures
-- Firmware execution evidence
-- Simulation results
+- Firmware execution logs/evidence
+- Simulation result summaries (`docs/`)
+
+---
 
 ## 8. RTL-to-GDSII Handoff
 
-After functional verification, the verified RTL was used as the input to the physical implementation flow.
-
-The RTL-to-GDSII flow includes:
+Once functional verification is complete, the verified RTL is used as input to the physical implementation flow (`03_rtl_to_gdsii/`) using OpenLane on the SKY130 PDK. This flow includes:
 
 - Synthesis
 - Floorplanning
 - Placement
-- Clock Tree Synthesis
+- Clock Tree Synthesis (CTS)
 - Routing
-- Static Timing Analysis
-- DRC
-- LVS
+- Static Timing Analysis (STA)
+- Design Rule Checking (DRC)
+- Layout vs. Schematic (LVS)
 - GDSII generation
+
+---
 
 ## 9. Verification Status
 
 | Verification Area | Status |
 |---|---|
-| Processor Integration | Completed |
-| Firmware Execution | Completed |
-| ROM Access | Completed |
-| SRAM Access | Completed |
-| AXI4-Lite Communication | Completed |
-| Address Decoding | Completed |
-| UART Integration | Completed |
-| Waveform Verification | Completed |
-| RTL-to-GDSII Handoff | Completed |
+| Processor Integration | ✅ Completed |
+| Firmware Execution | ✅ Completed |
+| ROM Access | ✅ Completed |
+| SRAM Access | ✅ Completed |
+| AXI4-Lite Communication | ✅ Completed |
+| Address Decoding | ✅ Completed |
+| UART Integration | ✅ Completed |
+| Waveform Verification | ✅ Completed |
+| RTL-to-GDSII Handoff | ✅ Completed |
